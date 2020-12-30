@@ -1,23 +1,19 @@
-using System.Diagnostics.Tracing;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ProAgil.Domain;
-using ProAgil.Repository;
 using ProAgil.Repository.Contracts;
 
 namespace ProAgil.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EventoController : ControllerBase
+    public class PalestranteController : ControllerBase
     {
         private readonly IProAgilRepository _repository;
 
-        public EventoController(IProAgilRepository repository)
+        public PalestranteController(IProAgilRepository repository)
         {
             _repository = repository;
         }
@@ -27,7 +23,7 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                return Ok(await _repository.GetAllEventosAsync(true));
+                return Ok(await _repository.GetAllPalestrantesAsync(true));
             }
             catch(Exception ex)
             {
@@ -41,7 +37,7 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                return Ok(await _repository.GetEventoAsyncById(id, true));
+                return Ok(await _repository.GetPalestranteAsyncById(id, true));
             }
             catch(Exception ex)
             {
@@ -50,12 +46,12 @@ namespace ProAgil.WebAPI.Controllers
             }
         }
 
-        [HttpGet("getByTema/{tema}")]
-        public async Task<IActionResult> Get(string tema)
+        [HttpGet("getByNome/{nome}")]
+        public async Task<IActionResult> Get(string nome)
         {
             try
             {
-                return Ok(await _repository.GetEventosAsyncByTema(tema, true));
+                return Ok(await _repository.GetPalestrantesAsyncByName(nome, true));
             }
             catch(Exception ex)
             {
@@ -65,7 +61,7 @@ namespace ProAgil.WebAPI.Controllers
         }  
         
         [HttpPost]
-        public async Task<IActionResult> Post(Evento model)
+        public async Task<IActionResult> Post(Palestrante model)
         {
             try
             {
@@ -73,7 +69,7 @@ namespace ProAgil.WebAPI.Controllers
 
                 if(await _repository.SaveChangesAsync())
                 {
-                    return Created($"/api/evento/{model.Id}", model);
+                    return Created($"/api/palestrante/{model.Id}", model);
                 }
             }
             catch(Exception ex)
@@ -86,21 +82,21 @@ namespace ProAgil.WebAPI.Controllers
         }     
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Evento model)
+        public async Task<IActionResult> Put(int id, Palestrante model)
         {
             try
             {
-                var evento = await _repository.GetEventoAsyncById(id, false);
+                var palestrante = await _repository.GetPalestranteAsyncById(id, false);
 
-                if(evento == null)
+                if(palestrante == null)
                     return NotFound();
 
-                model.Id = evento.Id;
+                model.Id = palestrante.Id;
                 _repository.Update(model);
 
                 if(await _repository.SaveChangesAsync())
                 {
-                    return Created($"/api/evento/{model.Id}", model);
+                    return Created($"/api/palestrante/{model.Id}", model);
                 }
             }
             catch(Exception ex)
@@ -117,12 +113,12 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                var evento = await _repository.GetEventoAsyncById(id, false);
+                var palestrante = await _repository.GetPalestranteAsyncById(id, false);
 
-                if(evento == null)
+                if(palestrante == null)
                     return NotFound();
                     
-                _repository.Delete(evento);
+                _repository.Delete(palestrante);
 
                 if(await _repository.SaveChangesAsync())
                 {
@@ -136,6 +132,6 @@ namespace ProAgil.WebAPI.Controllers
             }
 
             return BadRequest("Houve um erro na operação.");
-        }           
+        }    
     }
 }
