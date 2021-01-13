@@ -7,6 +7,7 @@ using ProAgil.Domain;
 using ProAgil.Repository.Contracts;
 using AutoMapper;
 using ProAgil.WebAPI.Dtos;
+using System.Linq;
 
 namespace ProAgil.WebAPI.Controllers
 {
