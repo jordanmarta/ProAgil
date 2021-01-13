@@ -1,13 +1,12 @@
-using System.Diagnostics.Tracing;
+using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ProAgil.Domain;
-using ProAgil.Repository;
 using ProAgil.Repository.Contracts;
+using AutoMapper;
+using ProAgil.WebAPI.Dtos;
 
 namespace ProAgil.WebAPI.Controllers
 {
@@ -16,10 +15,12 @@ namespace ProAgil.WebAPI.Controllers
     public class EventoController : ControllerBase
     {
         private readonly IProAgilRepository _repository;
+        public readonly IMapper _mapper;
 
-        public EventoController(IProAgilRepository repository)
+        public EventoController(IProAgilRepository repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -27,12 +28,14 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                return Ok(await _repository.GetAllEventosAsync(true));
+                var eventos = await _repository.GetAllEventosAsync(true);
+                var results = _mapper.Map<IEnumerable<EventoDto>>(eventos);
+                return Ok(results);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                    $"Falha ao realizar operação {ex.Message}");
             }
         }
 
@@ -41,9 +44,11 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                return Ok(await _repository.GetEventoAsyncById(id, true));
+                var evento = await _repository.GetEventoAsyncById(id, true);
+                var result = _mapper.Map<EventoDto>(evento);
+                return Ok(evento);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     "Falha ao realizar operação");
@@ -55,62 +60,66 @@ namespace ProAgil.WebAPI.Controllers
         {
             try
             {
-                return Ok(await _repository.GetEventosAsyncByTema(tema, true));
+                var evento = await _repository.GetEventosAsyncByTema(tema, true);
+                var result = _mapper.Map<EventoDto>(evento);
+                return Ok(evento);                
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     "Falha ao realizar operação");
             }
-        }  
-        
+        }
+
         [HttpPost]
-        public async Task<IActionResult> Post(Evento model)
+        public async Task<IActionResult> Post(EventoDto model)
         {
             try
             {
-                _repository.Add(model);
+                var evento = _mapper.Map<Evento>(model);
+                _repository.Add(evento);
 
-                if(await _repository.SaveChangesAsync())
+                if (await _repository.SaveChangesAsync())
                 {
-                    return Created($"/api/evento/{model.Id}", model);
+                    return Created($"/api/evento/{model.Id}", _mapper.Map<EventoDto>(evento));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     "Falha ao realizar operação");
             }
 
             return BadRequest("Houve um erro na inclusão do evento.");
-        }     
+        }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Evento model)
+        public async Task<IActionResult> Put(int id, EventoDto model)
         {
             try
             {
                 var evento = await _repository.GetEventoAsyncById(id, false);
 
-                if(evento == null)
+                if (evento == null)
                     return NotFound();
 
-                model.Id = evento.Id;
-                _repository.Update(model);
+                _mapper.Map(model, evento);
 
-                if(await _repository.SaveChangesAsync())
+                _repository.Update(evento);
+
+                if (await _repository.SaveChangesAsync())
                 {
-                    return Created($"/api/evento/{model.Id}", model);
+                    return Created($"/api/evento/{model.Id}", _mapper.Map<EventoDto>(evento));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     "Falha ao realizar operação");
             }
 
             return BadRequest("Houve um erro na operação.");
-        }    
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -119,23 +128,23 @@ namespace ProAgil.WebAPI.Controllers
             {
                 var evento = await _repository.GetEventoAsyncById(id, false);
 
-                if(evento == null)
+                if (evento == null)
                     return NotFound();
-                    
+
                 _repository.Delete(evento);
 
-                if(await _repository.SaveChangesAsync())
+                if (await _repository.SaveChangesAsync())
                 {
                     return Ok();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     "Falha ao realizar operação");
             }
 
             return BadRequest("Houve um erro na operação.");
-        }           
+        }
     }
 }
