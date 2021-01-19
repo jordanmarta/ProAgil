@@ -9,11 +9,13 @@ using ProAgil.Domain;
 using ProAgil.Repository.Contracts;
 using AutoMapper;
 using ProAgil.WebAPI.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProAgil.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EventoController : ControllerBase
     {
         private readonly IProAgilRepository _repository;
@@ -42,7 +44,7 @@ namespace ProAgil.WebAPI.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> Upload()
+        public IActionResult Upload()
         {
             try
             {
@@ -68,8 +70,6 @@ namespace ProAgil.WebAPI.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
                     $"Falha ao realizar operação {ex.Message}");
             }
-
-            return BadRequest("Erro ao tentar realizar upload");
         }
 
         [HttpGet("{id}")]
@@ -84,7 +84,7 @@ namespace ProAgil.WebAPI.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                    $"Falha ao realizar operação: ${ex.Message}");
             }
         }
 
@@ -100,7 +100,7 @@ namespace ProAgil.WebAPI.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                   $"Falha ao realizar operação: ${ex.Message}");
             }
         }
 
@@ -120,7 +120,7 @@ namespace ProAgil.WebAPI.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                    $"Falha ao realizar operação: ${ex.Message}");
             }
 
             return BadRequest("Houve um erro na inclusão do evento.");
@@ -148,7 +148,7 @@ namespace ProAgil.WebAPI.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                    $"Falha ao realizar operação: ${ex.Message}");
             }
 
             return BadRequest("Houve um erro na operação.");
@@ -174,7 +174,7 @@ namespace ProAgil.WebAPI.Controllers
             catch (Exception ex)
             {
                 return this.StatusCode(StatusCodes.Status500InternalServerError,
-                    "Falha ao realizar operação");
+                    $"Falha ao realizar operação: ${ex.Message}");
             }
 
             return BadRequest("Houve um erro na operação.");
